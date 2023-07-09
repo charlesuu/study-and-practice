@@ -14,8 +14,7 @@ public class Main {
             for (int j = 0; j < N; j++) {
                 arr[j] = sc.nextInt();
             }
-
-
+            
             int max = -1;
             long margin = 0;
             for (int j = N - 1; j >= 0; j--) {
