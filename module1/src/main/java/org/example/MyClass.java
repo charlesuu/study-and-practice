@@ -2,13 +2,17 @@ package org.example;
 
 public class MyClass {
 
-    private int privateMember;
+    private String name;
 
-    public MyClass(int privateMember) {
-        this.privateMember = privateMember;
+    public MyClass(String name) {
+        this.name = name;
     }
 
-    public int addOtherMember(MyClass otherClass) {
-        return privateMember + otherClass.privateMember;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
