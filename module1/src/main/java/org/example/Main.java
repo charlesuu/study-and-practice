@@ -14,22 +14,10 @@ import java.util.StringTokenizer;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        List<MyClass> names = new ArrayList<>();
-        names.add(new MyClass("abc"));
-        names.add(new MyClass("def"));
+        TestEnum[] arr = TestEnum.values();
+        for(TestEnum e : arr) {
 
-        List<MyClass> unmodifiableNames = Collections.unmodifiableList(names);
-
-
-        for (MyClass myClass1 : unmodifiableNames) {
-            System.out.println(myClass1.getName());
-        }
-
-        MyClass myClass = unmodifiableNames.get(1);
-        myClass.setName("호호히");
-
-        for (MyClass myClass1 : unmodifiableNames) {
-            System.out.println(myClass1.getName());
+            System.out.println(e);
         }
 
     }
