@@ -1,24 +1,50 @@
 package org.example;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Queue;
-import java.util.Scanner;
-import java.util.StringTokenizer;
+import java.util.UUID;
 
 public class Main {
+    public static void main(String[] args) {
+        int[] input = {2, 3, 1, 4, 5, 6};
+        Main sol = new Main();
+        sol.solution(input);
+    }
 
-    public static void main(String[] args) throws IOException {
-        TestEnum[] arr = TestEnum.values();
-        for(TestEnum e : arr) {
+    public int solution(int[] cards) {
 
-            System.out.println(e);
+        visited = new boolean[cards.length];
+
+        List<Integer> cntList = new ArrayList<>();
+
+        for (int i = 0; i < cards.length; i++) {
+            if (visited[i]) continue;
+            cnt = 1;
+            visited[i] = true;
+            recursive(cards, cards[i] - 1);
+            cntList.add(cnt);
         }
+        System.out.println("cntList = " + cntList);
 
+        cntList.sort(Comparator.reverseOrder());
+
+        if (cntList.size() < 2) {
+            return 0;
+        } else {
+            return cntList.get(0) * cntList.get(1);
+        }
+    }
+
+    int cnt = 0;
+    boolean[] visited;
+
+    public void recursive(int[] cards, int idx) {
+        if (visited[idx]) return;
+
+        visited[idx] = true;
+        cnt++;
+        recursive(cards, cards[idx] - 1);
     }
 }
