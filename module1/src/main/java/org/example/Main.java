@@ -1,50 +1,34 @@
 package org.example;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 public class Main {
-    public static void main(String[] args) {
-        int[] input = {2, 3, 1, 4, 5, 6};
-        Main sol = new Main();
-        sol.solution(input);
-    }
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String eq = br.readLine();
+        String[] equationArr = eq.split("-");
 
-    public int solution(int[] cards) {
+        int ret = 0;
 
-        visited = new boolean[cards.length];
+        for (int i = 0; i < equationArr.length; i++) {
+            int sum = 0;
 
-        List<Integer> cntList = new ArrayList<>();
-
-        for (int i = 0; i < cards.length; i++) {
-            if (visited[i]) continue;
-            cnt = 1;
-            visited[i] = true;
-            recursive(cards, cards[i] - 1);
-            cntList.add(cnt);
+            String[] arr = equationArr[i].split("\\+");
+            for (String num : arr) {
+                sum += Integer.parseInt(num);
+            }
+            if (i == 0) {
+                ret += sum;
+            } else {
+                ret -= sum;
+            }
         }
-        System.out.println("cntList = " + cntList);
-
-        cntList.sort(Comparator.reverseOrder());
-
-        if (cntList.size() < 2) {
-            return 0;
-        } else {
-            return cntList.get(0) * cntList.get(1);
-        }
-    }
-
-    int cnt = 0;
-    boolean[] visited;
-
-    public void recursive(int[] cards, int idx) {
-        if (visited[idx]) return;
-
-        visited[idx] = true;
-        cnt++;
-        recursive(cards, cards[idx] - 1);
+        System.out.println(ret);
     }
 }
