@@ -9,26 +9,23 @@ import java.util.List;
 import java.util.UUID;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String eq = br.readLine();
-        String[] equationArr = eq.split("-");
+    public static void main(String[] args){
+        Mouse mickey = new Mouse();
 
-        int ret = 0;
+        mickey.name = "미키";
+        mickey.age = 85;
+        mickey.countOfTail = 1;
 
-        for (int i = 0; i < equationArr.length; i++) {
-            int sum = 0;
+        mickey.sing();
 
-            String[] arr = equationArr[i].split("\\+");
-            for (String num : arr) {
-                sum += Integer.parseInt(num);
-            }
-            if (i == 0) {
-                ret += sum;
-            } else {
-                ret -= sum;
-            }
-        }
-        System.out.println(ret);
+        mickey = null;
+
+        Mouse jerry = new Mose();
+
+        jerry.name = "제리"ㅣ
+        jerry.age = 73;
+        jerry.countOfTail = 1l;
+
+        jerry.sing();
     }
 }
