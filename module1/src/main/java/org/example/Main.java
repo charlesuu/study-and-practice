@@ -3,17 +3,29 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+
 
 public class Main {
-    public static void main(String[] args){
-        int ordinal = TestEnum.me.ordinal();
-        int num = TestEnum.me.getNum();
+    public static void main(String[] args) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String equation = reader.readLine();
+        String[] equationArr = equation.split("-");
 
-        System.out.println("컴파일러가 선언한 ordinal :     " + ordinal);
-        System.out.println("우리가 선언한 num :      " + num);
+        int ret = 0;
+
+        for (int i = 0; i < equationArr.length; i++) {
+            int sum = 0;
+
+            String[] arr = equationArr[i].split("\\+");
+            for (String num : arr) {
+                sum += Integer.parseInt(num);
+            }
+            if (i == 0) {
+                ret += sum;
+            } else {
+                ret -= sum;
+            }
+        }
+        System.out.println(ret);
     }
 }
