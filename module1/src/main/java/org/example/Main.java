@@ -6,34 +6,34 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class Main extends Thread {
+public class Main {
     public static void main(String[] args) {
-        StringBuffer stringBuffer = new StringBuffer();
-        StringBuilder stringBuilder = new StringBuilder();
 
-        new Thread(() -> {
-            for(int i=0; i<10000; i++) {
-                stringBuffer.append(1);
-                stringBuilder.append(1);
-            }
-        }).start();
-
-        new Thread(() -> {
-            for(int i=0; i<10000; i++) {
-                stringBuffer.append(1);
-                stringBuilder.append(1);
-            }
-        }).start();
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(2000);
-
-                System.out.println("StringBuffer.length: "+ stringBuffer.length()); // thread safe 함
-                System.out.println("StringBuilder.length: "+ stringBuilder.length()); // thread unsafe 함
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
     }
+
+
+
+    private int countZeros(String s) { 
+         int zeros = 0; 
+         for (char c : s.toCharArray()) { 
+             if (c == '0') zeros++; 
+         } 
+         return zeros; 
+     } 
+  
+     public int[] solution(String s) { 
+         int loop = 0; 
+         int removed = 0; 
+  
+         while (!s.equals("1")) { 
+             int zeros = countZeros(s); 
+             loop += 1; 
+             removed += zeros; 
+  
+             int ones = s.length() - zeros; 
+             s = Integer.toString(ones, 2); 
+         } 
+  
+         return new int[] {loop, removed}; 
+     }
 }
