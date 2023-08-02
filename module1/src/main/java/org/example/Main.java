@@ -1,39 +1,32 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class Main extends Thread {
+public class Main {
+
     public static void main(String[] args) {
-        StringBuffer stringBuffer = new StringBuffer();
-        StringBuilder stringBuilder = new StringBuilder();
+        HashMap<String, String> hashMap = new HashMap<>();
+    }
 
-        new Thread(() -> {
-            for(int i=0; i<10000; i++) {
-                stringBuffer.append(1);
-                stringBuilder.append(1);
-            }
-        }).start();
+    public int solution(int[] ability, int number) {
+        PriorityQueue<Integer> pq = Arrays.stream(ability)
+                .boxed()
+                .collect(Collectors.toCollection(PriorityQueue::new));
 
-        new Thread(() -> {
-            for(int i=0; i<10000; i++) {
-                stringBuffer.append(1);
-                stringBuilder.append(1);
-            }
-        }).start();
+        for (int i = 0; i < number; i++) {
+            int a = pq.poll();
+            int b = pq.poll();
+            pq.add(a + b);
+            pq.add(a + b);
+        }
 
-        new Thread(() -> {
-            try {
-                Thread.sleep(2000);
-
-                System.out.println("StringBuffer.length: "+ stringBuffer.length()); // thread safe 함
-                System.out.println("StringBuilder.length: "+ stringBuilder.length()); // thread unsafe 함
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        return pq.stream().reduce(0, Integer::sum);
     }
 }
