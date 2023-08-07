@@ -2,7 +2,9 @@ package org.example;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Main {
 
@@ -10,21 +12,15 @@ public class Main {
 
     }
 
-    private static final char[] CHARS = "AEIOU".toCharArray();
+    public int[] solution(int[] numbers) {
+        Set<Integer> set = new HashSet<>();
 
-    private List<String> generate(String word) {
-        List<String> words = new ArrayList<>();
-        words.add(word);
-
-        if (word.length() == 5) return words;
-
-        for (char c : CHARS) {
-            words.addAll(generate(word + c));
+        for (int i = 0; i < numbers.length; i++) {
+            for (int j = i + 1; j < numbers.length; j++) {
+                set.add(numbers[i] + numbers[j]);
+            }
         }
-        return words;
-    }
 
-    public int solution(String word) {
-        return generate("").indexOf(word);
+        return set.stream().mapToInt(Integer::intValue).sorted().toArray();
     }
 }
