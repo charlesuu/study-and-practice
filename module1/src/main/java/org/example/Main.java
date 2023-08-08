@@ -12,15 +12,33 @@ public class Main {
 
     }
 
-    public int[] solution(int[] numbers) {
-        Set<Integer> set = new HashSet<>();
+    private boolean isPrime(int n) {
+        if (n <= 1) return false;
+        for (int i = 2; i * i <= n; i++) {
+            if (n % i == 0) return false;
+        }
+        return true;
+    }
+
+    private void getPrimes(int acc, int[] numbers, boolean[] isUsed,
+            Set<Integer> primes) {
+        if (isPrime(acc)) primes.add(acc);
 
         for (int i = 0; i < numbers.length; i++) {
-            for (int j = i + 1; j < numbers.length; j++) {
-                set.add(numbers[i] + numbers[j]);
-            }
-        }
+            if (isUsed[i]) continue;
 
-        return set.stream().mapToInt(Integer::intValue).sorted().toArray();
+            int nextAcc = acc * 10 + numbers[i];
+
+            isUsed[i] = true;
+            getPrimes(nextAcc, numbers, isUsed, primes);
+            isUsed[i] = false;
+        }
+    }
+
+    public int solution(String nums) {
+        Set<Integer> primes = new HashSet<>();
+        int[] numbers = nums.chars().map(c -> c - '0').toArray();
+        getPrimes(0, numbers, new boolean[numbers.length], primes);
+        return primes.size();
     }
 }
