@@ -1,36 +1,31 @@
 package org.example;
 
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Main {
-    public static void main(String[] args) {
 
+
+    public static void main(String[] args) {
 
     }
 
-    private static int binarySearch(int[] arr, int target) {
-        int start = 0;  // inclusive
-        int end = arr.length;  // exclusive
-
-        while (end > start) {
-            int mid = (start + end) / 2;
-            int value = arr[mid];
-
-            if (value == target) {
-                return mid;
-            } else if (value > target) {
-                end = mid;
-            } else {
-                start = mid + 1;
-            }
+    private List<int[]> hanoi(int n, int from, int to) {
+        if (n == 1) {
+            return List.of(new int[]{from, to});
         }
 
-        return -1;
+        int empty = 6 - from - to;
+
+        List<int[]> result = new ArrayList<>();
+        result.addAll(hanoi(n - 1, from, empty));
+        result.addAll(hanoi(1, from, to));
+        result.addAll(hanoi(n - 1, empty, to));
+        return result;
+    }
+
+    public int[][] solution(int n) {
+        return hanoi(n, 1, 3).toArray(new int[0][]);
     }
 }
