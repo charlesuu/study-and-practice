@@ -1,66 +1,44 @@
 package org.example;
 
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Main {
 
+    private void count(int index, Set<String> banned,
+            String[][] bans, Set<Set<String>> banSet) {
+        if (index == bans.length) {
+            banSet.add(new HashSet<>(banned));
+            return;
+        }
 
-    private static final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    private static final int[] dx = {-1, 1, 0, 0};
-    private static final int[] dy = {0, 0, -1, 1};
-    private static final String VISITED = "X";
-    private static int n;
-
-    public static void dfs(int x, int y, String[][] board) {
-        String color = board[x][y];
-        board[x][y] = VISITED;
-        int nx, ny;
-
-        for (int i = 0; i < 4; i++) {
-            nx = x + dx[i];
-            ny = y + dy[i];
-
-            if ((0 <= nx && nx < n) && (0 <= ny && ny < n) && board[nx][ny].equals(color)) {
-                dfs(nx, ny, board);
+        for (String id : bans[index]) {
+            if (banned.contains(id)) {
+                continue;
             }
+            banned.add(id);
+            count(index + 1, banned, bans, banSet);
+            banned.remove(id);
         }
     }
 
+    public int solution(String[] user_id, String[] banned_id) {
+        String[][] bans = Arrays.stream(banned_id)
+                .map(banned -> banned.replace('*', '.'))
+                .map(banned -> Arrays.stream(user_id)
+                        .filter(id -> id.matches(banned))
+                        .toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        Set<Set<String>> banSet = new HashSet<>();
+        count(0, new HashSet<>(), bans, banSet);
+        return banSet.size();
+    }
+
     public static void main(String[] args) throws IOException {
-        n = Integer.parseInt(br.readLine());
-        String[][] board1 = new String[n][n];
-        String[][] board2 = new String[n][n];
-        int result1 = 0;
-        int result2 = 0;
-        String color;
 
-        for (int i = 0; i < n; i++) {
-            String[] tokens = br.readLine().split("");
-
-            for (int j = 0; j < n; j++) {
-                color = tokens[j];
-                board1[i][j] = color;
-                board2[i][j] = color.equals("G") ? "R" : color;
-            }
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (!board1[i][j].equals(VISITED)) {
-                    dfs(i, j, board1);
-                    result1 += 1;
-                }
-
-                if (!board2[i][j].equals(VISITED)) {
-                    dfs(i, j, board2);
-                    result2 += 1;
-                }
-            }
-        }
-
-        System.out.println(result1 + " " + result2);
     }
 }
