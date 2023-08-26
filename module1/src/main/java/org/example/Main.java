@@ -1,86 +1,75 @@
 package org.example;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-
-    }
-
-    private static class Node {
-
-        private int depth = 1;
-        private Node parent = null;
-
-        private long max;
-
-        public Node(long value) {
-            max = value;
-        }
-
-        public boolean isConnected(Node o) {
-            return root() == o.root();
-        }
-
-        public long max() {
-            return root().max;
-        }
-
-        public void merge(Node o) {
-            if (isConnected(o)) {
-                return;
+    private int scoreDiff(int[] apeach, int[] ryan) {
+        int diff = 0;
+        for (int i = 0; i < apeach.length; i++) {
+            if (apeach[i] == 0 && ryan[i] == 0) {
+                continue;
             }
 
-            Node root1 = root();
-            Node root2 = o.root();
-
-            if (root1.depth > root2.depth) {
-                root2.parent = root1;
-            } else if (root1.depth < root2.depth) {
-                root1.parent = root2;
+            if (apeach[i] >= ryan[i]) {
+                diff -= 10 - i;
             } else {
-                root2.parent = root1;
-                root1.depth += 1;
+                diff += 10 - i;
             }
-
-            root1.max = root2.max = Math.max(root1.max, root2.max);
         }
-
-        private Node root() {
-            if (parent == null) {
-                return this;
-            }
-            return parent.root();
-        }
+        return diff;
     }
 
-    public long[] solution(long k, long[] roomNumbers) {
-        List<Long> assigned = new ArrayList<>();
-
-        Map<Long, Node> nodes = new HashMap<>();
-        for (long number : roomNumbers) {
-            if (nodes.containsKey(number)) {
-                number = nodes.get(number).max() + 1;
+    private boolean isPrior(int[] base, int[] comp) {
+        for (int i = 10; i >= 0; i--) {
+            if (comp[i] == base[i]) {
+                continue;
             }
+            return comp[i] > base[i];
+        }
+        return false;
+    }
 
-            Node node = new Node(number);
-            nodes.put(number, node);
-            if (nodes.containsKey(number - 1)) {
-                node.merge(nodes.get(number - 1));
+    private int[] ryan(int index, int[] hits, int n, int[] apeach) {
+        if (index == hits.length) {
+            if (n > 0) {
+                return null;
             }
-            if (nodes.containsKey(number + 1)) {
-                node.merge(nodes.get(number + 1));
+            if (scoreDiff(apeach, hits) <= 0) {
+                return null;
             }
-
-            assigned.add(number);
+            return Arrays.copyOf(hits, hits.length);
         }
 
-        return assigned.stream().mapToLong(Long::longValue).toArray();
+        int maxDiff = 0;
+        int[] result = null;
+
+        for (int hit = 0; hit <= n; hit++) {
+            hits[index] = hit;
+            int[] ryan = ryan(index + 1, hits, n - hit, apeach);
+            if (ryan == null) {
+                continue;
+            }
+
+            int diff = scoreDiff(apeach, ryan);
+            if (diff > maxDiff ||
+                    (diff == maxDiff && isPrior(result, ryan))) {
+                maxDiff = diff;
+                result = ryan;
+            }
+        }
+
+        return result;
     }
+
+    public int[] solution(int n, int[] info) {
+        int[] ryan = ryan(0, new int[11], n, info);
+        if (ryan == null) {
+            return new int[]{-1};
+        }
+        return ryan;
+    }
+
+
 }
