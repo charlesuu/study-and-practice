@@ -1,65 +1,43 @@
 package org.example;
 
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
 
 public class Main {
 
-    private static class State {
+    private final int[][] mem = new int[101][101];
 
-        public final String word;
-        public final int step;
-
-        private State(String word, int step) {
-            this.word = word;
-            this.step = step;
+    private int count(int x, int y, int w, int h, boolean[][] isPuddle) {
+        if (x > w || y > h) {
+            return 0;
         }
+        if (isPuddle[y][x]) {
+            return 0;
+        }
+
+        if (mem[x][y] != -1) {
+            return mem[x][y];
+        }
+        if (x == w && y == h) {
+            return 1;
+        }
+
+        int total = count(x + 1, y, w, h, isPuddle)
+                + count(x, y + 1, w, h, isPuddle);
+        return mem[x][y] = total % 1000000007;
     }
 
-    private boolean isConvertable(String src, String dst) {
-        char[] srcArr = src.toCharArray();
-        char[] dstArr = dst.toCharArray();
-
-        int diff = 0;
-        for (int i = 0; i < srcArr.length; i++) {
-            if (srcArr[i] != dstArr[i]) {
-                diff++;
-            }
-        }
-        return diff == 1;
-    }
-
-    public int solution(String begin, String target, String[] words) {
-        boolean[] isVisited = new boolean[words.length];
-
-        Queue<State> queue = new LinkedList<>();
-        queue.add(new State(begin, 0));
-
-        while (!queue.isEmpty()) {
-            State state = queue.poll();
-
-            if (state.word.equals(target)) {
-                return state.step;
-            }
-
-            for (int i = 0; i < words.length; i++) {
-                String next = words[i];
-
-                if (!isConvertable(state.word, next)) {
-                    continue;
-                }
-
-                if (isVisited[i]) {
-                    continue;
-                }
-
-                isVisited[i] = true;
-                queue.add(new State(next, state.step + 1));
-            }
+    public int solution(int m, int n, int[][] puddles) {
+        for (int[] row : mem) {
+            Arrays.fill(row, -1);
         }
 
-        return 0;
+        boolean[][] isPuddle = new boolean[n + 1][m + 1];
+        for (int[] p : puddles) {
+            isPuddle[p[1]][p[0]] = true;
+        }
+
+        return count(1, 1, m, n, isPuddle);
     }
 
     public static void main(String[] args) {
