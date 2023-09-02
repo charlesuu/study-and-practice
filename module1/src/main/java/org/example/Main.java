@@ -9,46 +9,78 @@ import java.util.Queue;
 
 public class Main {
 
-    private static class Job {
+    private static class Node {
 
-        public final int start;
-        public final int duration;
+        private int depth = 1;
+        private Node parent = null;
 
-        private Job(int start, int duration) {
-            this.start = start;
-            this.duration = duration;
+        public boolean isConnected(Node o) {
+            return root() == o.root();
+        }
+
+        public void merge(Node o) {
+            if (isConnected(o)) {
+                return;
+            }
+
+            Node root1 = root();
+            Node root2 = o.root();
+
+            if (root1.depth > root2.depth) {
+                root2.parent = root1;
+            } else if (root1.depth < root2.depth) {
+                root1.parent = root2;
+            } else {
+                root2.parent = root1;
+                root1.depth += 1;
+            }
+        }
+
+        private Node root() {
+            if (parent == null) {
+                return this;
+            }
+            return parent.root();
         }
     }
 
-    public int solution(int[][] rawJobs) {
-        Job[] jobs = new Job[rawJobs.length];
-        for (int i = 0; i < jobs.length; i++) {
-            jobs[i] = new Job(rawJobs[i][0], rawJobs[i][1]);
+    private static class Edge {
+
+        public final int u;
+        public final int v;
+        public final int cost;
+
+        private Edge(int u, int v, int cost) {
+            this.u = u;
+            this.v = v;
+            this.cost = cost;
         }
-        Arrays.sort(jobs, Comparator.comparingInt(job -> job.start));
+    }
 
-        Queue<Job> q = new LinkedList<>(Arrays.asList(jobs));
-        PriorityQueue<Job> pq = new PriorityQueue<>(
-                Comparator.comparingInt(job -> job.duration));
+    public int solution(int n, int[][] costs) {
+        Edge[] edges = Arrays.stream(costs)
+                .map(edge -> new Edge(edge[0], edge[1], edge[2]))
+                .sorted(Comparator.comparingInt(e -> e.cost))
+                .toArray(Edge[]::new);
 
-        int exec = 0;
-        int time = 0;
-        while (!q.isEmpty() || !pq.isEmpty()) {
-            while (!q.isEmpty() && q.peek().start <= time) {
-                pq.add(q.poll());
-            }
+        Node[] nodes = new Node[n];
+        for (int i = 0; i < n; i++) {
+            nodes[i] = new Node();
+        }
 
-            if (pq.isEmpty()) {
-                time = q.peek().start;
+        int totalCost = 0;
+        for (Edge edge : edges) {
+            Node node1 = nodes[edge.u];
+            Node node2 = nodes[edge.v];
+
+            if (node1.isConnected(node2)) {
                 continue;
             }
-
-            Job job = pq.poll();
-            exec += time + job.duration - job.start;
-            time += job.duration;
+            node1.merge(node2);
+            totalCost += edge.cost;
         }
 
-        return exec / jobs.length;
+        return totalCost;
     }
 
     public static void main(String[] args) {
