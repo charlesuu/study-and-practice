@@ -1,90 +1,77 @@
 package org.example;
 
-
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.Scanner;
 
 public class Main {
 
-    private static class Node {
-
-        private int depth = 1;
-        private Node parent = null;
-
-        public boolean isConnected(Node o) {
-            return root() == o.root();
-        }
-
-        public void merge(Node o) {
-            if (isConnected(o)) {
-                return;
-            }
-
-            Node root1 = root();
-            Node root2 = o.root();
-
-            if (root1.depth > root2.depth) {
-                root2.parent = root1;
-            } else if (root1.depth < root2.depth) {
-                root1.parent = root2;
-            } else {
-                root2.parent = root1;
-                root1.depth += 1;
-            }
-        }
-
-        private Node root() {
-            if (parent == null) {
-                return this;
-            }
-            return parent.root();
-        }
-    }
-
-    private static class Edge {
-
-        public final int u;
-        public final int v;
-        public final int cost;
-
-        private Edge(int u, int v, int cost) {
-            this.u = u;
-            this.v = v;
-            this.cost = cost;
-        }
-    }
-
-    public int solution(int n, int[][] costs) {
-        Edge[] edges = Arrays.stream(costs)
-                .map(edge -> new Edge(edge[0], edge[1], edge[2]))
-                .sorted(Comparator.comparingInt(e -> e.cost))
-                .toArray(Edge[]::new);
-
-        Node[] nodes = new Node[n];
-        for (int i = 0; i < n; i++) {
-            nodes[i] = new Node();
-        }
-
-        int totalCost = 0;
-        for (Edge edge : edges) {
-            Node node1 = nodes[edge.u];
-            Node node2 = nodes[edge.v];
-
-            if (node1.isConnected(node2)) {
-                continue;
-            }
-            node1.merge(node2);
-            totalCost += edge.cost;
-        }
-
-        return totalCost;
-    }
+    private static boolean[] switchs;
+    private static int N;
 
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
 
+        N = sc.nextInt();
+        switchs = new boolean[N + 1];
+
+        for (int i = 1; i <= N; i++) {
+            switchs[i] = (sc.nextInt() == 1) ? true : false;
+        }
+
+        int studentCount = sc.nextInt();
+
+        for (int i = 0; i < studentCount; i++) {
+            if (sc.nextInt() == 1) {
+                male(sc.nextInt());
+            } else {
+                female(sc.nextInt());
+            }
+        }
+
+        System.out.println(printSwitchs());
     }
 
+    private static String printSwitchs() {
+        StringBuilder sb = new StringBuilder();
+
+        int count = 0;
+        for (int i = 1; i <= N; i++) {
+            if (switchs[i] == true) {
+                sb.append(1);
+            } else {
+                sb.append(0);
+            }
+            sb.append(" ");
+            count++;
+
+            if (count % 20 == 0) {
+                sb.append("\n");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private static void male(int switchNum) {
+        for (int i = switchNum; i <= N; i += switchNum) {
+            switchs[i] = !switchs[i];
+        }
+    }
+
+    private static void female(int switchNum) {
+        switchs[switchNum] = !switchs[switchNum];
+
+        int preNum = switchNum - 1;
+        int postNum = switchNum + 1;
+        while (true) {
+            if ((1 <= preNum && postNum <= N) && (switchs[preNum] == switchs[postNum])) {
+                switchs[preNum] = !switchs[preNum];
+                switchs[postNum] = !switchs[postNum];
+            } else {
+                break;
+            }
+
+            preNum = preNum - 1;
+            postNum = postNum + 1;
+        }
+    }
 }
