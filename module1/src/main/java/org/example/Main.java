@@ -1,8 +1,11 @@
 package org.example;
 
-import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
-import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -16,48 +19,43 @@ public class Main {
     public static Deque<String[]> dirChanges;
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
 
-        N = sc.nextInt();
-
-        board = new int[N][N];
-
-        K = sc.nextInt();
-
-        //사과 배치
-        for (int i = 0; i < K; i++) {
-            int x = sc.nextInt() - 1;
-            int y = sc.nextInt() - 1;
-
-            board[x][y] = 2;//사과는 2
-        }
-
-        L = sc.nextInt();
-        dirChanges = new ArrayDeque<>();
-        for (int i = 0; i < L; i++) {
-            String line = sc.nextLine();
-            dirChanges.offer(line.split(" "));
-        }
-
-        int result = play();
     }
 
-    private static int play() {
-        int dir = 1;
-        int X = 0;
-        int Y = 0;
-        board[0][0] = 1;
+    public int solution(int n, int[] lost, int[] reserve) {
+        Arrays.sort(lost);
+        Arrays.sort(reserve);
 
-        Deque<int[]> snake = new ArrayDeque<>();
-        snake.offer(new int[] {0, 0});
+        Set<Integer> owns = Arrays.stream(lost)
+            .boxed()
+            .collect(Collectors.toSet());
+        owns.retainAll(Arrays.stream(reserve)
+            .boxed()
+            .collect(Collectors.toSet()));
 
-        while (true) {
-            int nX = X + dirX[dir];
-            int nY = Y + dirY[dir];
+        Queue<Integer> q = new LinkedList<>();
+        for (int l : lost)
+            q.add(l);
 
-            second++;
+        int get = 0;
+        for (int r : reserve) {
+            if (owns.contains(r)) {
+                continue;
+            }
+
+            while (!q.isEmpty() &&
+                (q.peek() < r - 1 || owns.contains(q.peek()))) {
+                q.poll();
+            }
+            if (q.isEmpty())
+                break;
+
+            if (q.peek() <= r + 1) {
+                q.poll();
+                get++;
+            }
         }
 
-        return 0;
+        return n - lost.length + owns.size() + get;
     }
 }
