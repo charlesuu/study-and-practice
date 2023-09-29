@@ -1,41 +1,78 @@
 package org.example;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class Main {
 
-    private final int[][] mem = new int[101][101];
+    private static class Node {
 
-    private int count(int x, int y, int w, int h, boolean[][] isPuddle) {
-        if (x > w || y > h)
-            return 0;
-        if (isPuddle[y][x])
-            return 0;
+        private int depth = 1;
+        private Node parent = null;
 
-        if (mem[x][y] != -1)
-            return mem[x][y];
-        if (x == w && y == h)
-            return 1;
-
-        int total = count(x + 1, y, w, h, isPuddle)
-            + count(x, y + 1, w, h, isPuddle);
-        return mem[x][y] = total % 1000000007;
-    }
-
-    public int solution(int m, int n, int[][] puddles) {
-        for (int[] row : mem) {
-            Arrays.fill(row, -1);
+        public boolean isConnected(Node o) {
+            return root() == o.root();
         }
 
-        boolean[][] isPuddle = new boolean[n + 1][m + 1];
-        for (int[] p : puddles) {
-            isPuddle[p[1]][p[0]] = true;
+        public void merge(Node o) {
+            if (isConnected(o))
+                return;
+
+            Node root1 = root();
+            Node root2 = o.root();
+
+            if (root1.depth > root2.depth) {
+                root2.parent = root1;
+            } else if (root1.depth < root2.depth) {
+                root1.parent = root2;
+            } else {
+                root2.parent = root1;
+                root1.depth += 1;
+            }
         }
 
-        return count(1, 1, m, n, isPuddle);
+        private Node root() {
+            if (parent == null)
+                return this;
+            return parent.root();
+        }
     }
 
-    public static void main(String[] args) {
+    private static class Edge {
 
+        public final int u;
+        public final int v;
+        public final int cost;
+
+        private Edge(int u, int v, int cost) {
+            this.u = u;
+            this.v = v;
+            this.cost = cost;
+        }
+    }
+
+    public int solution(int n, int[][] costs) {
+        Edge[] edges = Arrays.stream(costs)
+            .map(edge -> new Edge(edge[0], edge[1], edge[2]))
+            .sorted(Comparator.comparingInt(e -> e.cost))
+            .toArray(Edge[]::new);
+
+        Node[] nodes = new Node[n];
+        for (int i = 0; i < n; i++) {
+            nodes[i] = new Node();
+        }
+
+        int totalCost = 0;
+        for (Edge edge : edges) {
+            Node node1 = nodes[edge.u];
+            Node node2 = nodes[edge.v];
+
+            if (node1.isConnected(node2))
+                continue;
+            node1.merge(node2);
+            totalCost += edge.cost;
+        }
+
+        return totalCost;
     }
 }
