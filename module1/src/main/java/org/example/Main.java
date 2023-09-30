@@ -1,78 +1,49 @@
 package org.example;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Main {
 
-    private static class Node {
+    public int[] solution(String[] gems) {
+        int start = 0;
+        int end = gems.length - 1;
 
-        private int depth = 1;
-        private Node parent = null;
+        Set<String> gemSet = new HashSet<>(List.of(gems));
 
-        public boolean isConnected(Node o) {
-            return root() == o.root();
-        }
+        int s = 0;
+        int e = s;
+        Map<String, Integer> includes = new HashMap<>();
+        includes.put(gems[s], 1);
 
-        public void merge(Node o) {
-            if (isConnected(o))
-                return;
+        while (s < gems.length) {
+            if (includes.keySet().size() == gemSet.size()) {
+                if (e - s < end - start) {
+                    start = s;
+                    end = e;
+                }
 
-            Node root1 = root();
-            Node root2 = o.root();
-
-            if (root1.depth > root2.depth) {
-                root2.parent = root1;
-            } else if (root1.depth < root2.depth) {
-                root1.parent = root2;
+                includes.put(gems[s], includes.get(gems[s]) - 1);
+                if (includes.get(gems[s]) == 0) {
+                    includes.remove(gems[s]);
+                }
+                s++;
+            } else if (e < gems.length - 1) {
+                e++;
+                includes.put(gems[e],
+                    includes.getOrDefault(gems[e], 0) + 1);
             } else {
-                root2.parent = root1;
-                root1.depth += 1;
+                break;
             }
         }
 
-        private Node root() {
-            if (parent == null)
-                return this;
-            return parent.root();
-        }
+        return new int[] {start + 1, end + 1};
     }
 
-    private static class Edge {
+    public static void main(String[] args) {
 
-        public final int u;
-        public final int v;
-        public final int cost;
-
-        private Edge(int u, int v, int cost) {
-            this.u = u;
-            this.v = v;
-            this.cost = cost;
-        }
-    }
-
-    public int solution(int n, int[][] costs) {
-        Edge[] edges = Arrays.stream(costs)
-            .map(edge -> new Edge(edge[0], edge[1], edge[2]))
-            .sorted(Comparator.comparingInt(e -> e.cost))
-            .toArray(Edge[]::new);
-
-        Node[] nodes = new Node[n];
-        for (int i = 0; i < n; i++) {
-            nodes[i] = new Node();
-        }
-
-        int totalCost = 0;
-        for (Edge edge : edges) {
-            Node node1 = nodes[edge.u];
-            Node node2 = nodes[edge.v];
-
-            if (node1.isConnected(node2))
-                continue;
-            node1.merge(node2);
-            totalCost += edge.cost;
-        }
-
-        return totalCost;
     }
 }
