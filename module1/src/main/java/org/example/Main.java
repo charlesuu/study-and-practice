@@ -1,46 +1,74 @@
 package org.example;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.PriorityQueue;
 
 public class Main {
 
-    public int[] solution(String[] gems) {
-        int start = 0;
-        int end = gems.length - 1;
+    private static class DoublyPriorityQueue {
 
-        Set<String> gemSet = new HashSet<>(List.of(gems));
+        private int size = 0;
+        private final PriorityQueue<Integer> minPq
+            = new PriorityQueue<>();
+        private final PriorityQueue<Integer> maxPq
+            = new PriorityQueue<>((a, b) -> b - a);
 
-        int s = 0;
-        int e = s;
-        Map<String, Integer> includes = new HashMap<>();
-        includes.put(gems[s], 1);
+        public void add(int value) {
+            minPq.add(value);
+            maxPq.add(value);
+            size++;
+        }
 
-        while (s < gems.length) {
-            if (includes.keySet().size() == gemSet.size()) {
-                if (e - s < end - start) {
-                    start = s;
-                    end = e;
-                }
-
-                includes.put(gems[s], includes.get(gems[s]) - 1);
-                if (includes.get(gems[s]) == 0) {
-                    includes.remove(gems[s]);
-                }
-                s++;
-            } else if (e < gems.length - 1) {
-                e++;
-                includes.put(gems[e],
-                    includes.getOrDefault(gems[e], 0) + 1);
-            } else {
-                break;
+        public void removeMax() {
+            if (size == 0)
+                return;
+            maxPq.poll();
+            if (--size == 0) {
+                maxPq.clear();
+                minPq.clear();
             }
         }
 
-        return new int[] {start + 1, end + 1};
+        public void removeMin() {
+            if (size == 0)
+                return;
+            minPq.poll();
+            if (--size == 0) {
+                maxPq.clear();
+                minPq.clear();
+            }
+        }
+
+        public int max() {
+            if (size == 0)
+                return 0;
+            return maxPq.peek();
+        }
+
+        public int min() {
+            if (size == 0)
+                return 0;
+            return minPq.peek();
+        }
+    }
+
+    public int[] solution(String[] operations) {
+        DoublyPriorityQueue dpq = new DoublyPriorityQueue();
+        for (String operation : operations) {
+            String[] tokens = operation.split(" ");
+            String command = tokens[0];
+            String value = tokens[1];
+            switch (command) {
+                case "I" -> dpq.add(Integer.parseInt(value));
+                case "D" -> {
+                    if (value.equals("1")) {
+                        dpq.removeMax();
+                    } else {
+                        dpq.removeMin();
+                    }
+                }
+            }
+        }
+        return new int[] {dpq.max(), dpq.min()};
     }
 
     public static void main(String[] args) {
