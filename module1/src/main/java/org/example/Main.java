@@ -1,65 +1,42 @@
 package org.example;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Main {
 
-    private static class State {
-
-        public final int x;
-        public final int y;
-        public final int step;
-
-        private State(int x, int y, int step) {
-            this.x = x;
-            this.y = y;
-            this.step = step;
-        }
-    }
-
-    private static final int[] dx = {0, 1, 0, -1};
-    private static final int[] dy = {-1, 0, 1, 0};
-
-    public int solution(int[][] maps) {
-        boolean[][] isVisited
-            = new boolean[maps.length][maps[0].length];
-
-        Queue<State> queue = new LinkedList<>();
-        queue.add(new State(0, 0, 1));
-        isVisited[0][0] = true;
-
-        while (!queue.isEmpty()) {
-            State state = queue.poll();
-
-            if (state.y == maps.length - 1 &&
-                state.x == maps[state.y].length - 1) {
-                return state.step;
-            }
-
-            for (int d = 0; d < 4; d++) {
-                int nx = state.x + dx[d];
-                int ny = state.y + dy[d];
-
-                if (ny < 0 || ny >= maps.length ||
-                    nx < 0 || nx >= maps[ny].length) {
-                    continue;
-                }
-
-                if (maps[ny][nx] != 1) {
-                    continue;
-                }
-
-                if (isVisited[ny][nx]) {
-                    continue;
-                }
-
-                isVisited[ny][nx] = true;
-                queue.add(new State(nx, ny, state.step + 1));
-            }
+    public int[] solution(String[] id_list, String[] report, int k) {
+        Map<String, Set<String>> reports = new HashMap<>();
+        for (String id : id_list) {
+            reports.put(id, new HashSet<>());
         }
 
-        return -1;
+        Map<String, Integer> reported = new HashMap<>();
+
+        for (String r : report) {
+            String[] tokens = r.split(" ");
+            String reporter = tokens[0];
+            String target = tokens[1];
+
+            Set<String> set = reports.get(reporter);
+            if (set.contains(target))
+                continue;
+
+            set.add(target);
+            reported.putIfAbsent(target, 0);
+            reported.put(target, reported.get(target) + 1);
+        }
+
+        Set<String> banned = reported.keySet().stream()
+            .filter(id -> reported.get(id) >= k).collect(Collectors.toSet());
+
+        return Arrays.stream(id_list)
+            .mapToInt(id -> (int)reports.get(id).stream().filter(banned::contains).count())
+            .toArray();
     }
 
     public static void main(String[] args) {
