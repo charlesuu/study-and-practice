@@ -1,45 +1,91 @@
 package org.example;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Scanner;
 
 public class Main {
 
-    public int[] solution(String[] id_list, String[] report, int k) {
-        Map<String, Set<String>> reports = new HashMap<>();
-        for (String id : id_list) {
-            reports.put(id, new HashSet<>());
-        }
-
-        Map<String, Integer> reported = new HashMap<>();
-
-        for (String r : report) {
-            String[] tokens = r.split(" ");
-            String reporter = tokens[0];
-            String target = tokens[1];
-
-            Set<String> set = reports.get(reporter);
-            if (set.contains(target))
-                continue;
-
-            set.add(target);
-            reported.putIfAbsent(target, 0);
-            reported.put(target, reported.get(target) + 1);
-        }
-
-        Set<String> banned = reported.keySet().stream()
-            .filter(id -> reported.get(id) >= k).collect(Collectors.toSet());
-
-        return Arrays.stream(id_list)
-            .mapToInt(id -> (int)reports.get(id).stream().filter(banned::contains).count())
-            .toArray();
-    }
+    public static int[][] board = new int[10][10];
+    public static boolean[] checker = new boolean[10];
 
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        StringBuilder sb = new StringBuilder();
 
+        int T = sc.nextInt();
+
+        for (int i = 0; i < T; i++) {
+            //보드 입력 받기
+            for (int j = 1; j < 10; j++) {
+                for (int k = 1; k < 10; k++) {
+                    board[j][k] = sc.nextInt();
+                }
+            }
+            //정답 검사 및 결과 출력
+            if (checkRow() && checkCol() && checkBox()) {
+                sb.append(String.format("Case %d: CORRECT\n", i + 1));
+            } else {
+                sb.append(String.format("Case %d: INCORRECT\n", i + 1));
+            }
+        }
+
+        System.out.println(sb);
+    }
+
+    private static boolean checkRow() {
+        for (int i = 1; i < 10; i++) {
+            initChecker();
+            for (int j = 1; j < 10; j++) {
+                checker[board[i][j]] = true;
+            }
+            if (!checkChecker()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean checkCol() {
+        for (int i = 1; i < 10; i++) {
+            initChecker();
+            for (int j = 1; j < 10; j++) {
+                checker[board[j][i]] = true;
+            }
+            if (!checkChecker()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean checkBox() {
+        for (int i = 1; i < 9; i += 3) {
+            for (int j = 1; j < 9; j += 3) {
+                initChecker();
+                for (int k = i; k < i + 3; k++) {
+                    for (int l = j; l < j + 3; l++) {
+                        checker[board[k][l]] = true;
+                    }
+                }
+                if (!checkChecker()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static void initChecker() {
+        for (int i = 1; i < 10; i++) {
+            checker[i] = false;
+        }
+    }
+
+    private static boolean checkChecker() {
+        for (int i = 1; i < 10; i++) {
+            if (!checker[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }
