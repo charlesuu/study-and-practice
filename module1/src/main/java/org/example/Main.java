@@ -1,7 +1,8 @@
 package org.example;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
-import java.util.Stack;
 
 public class Main {
 
@@ -11,23 +12,21 @@ public class Main {
 
     }
 
-    public int[] solution(int[] prices) {
-        int[] answer = new int[prices.length];
+    public String solution(String[] participant, String[] completion) {
+        Map<String, Integer> count = new HashMap<>();
 
-        Stack<Integer> stack = new Stack<>();
-        for (int i = 0; i < prices.length; i++) {
-            while (!stack.isEmpty() && prices[stack.peek()] > prices[i]) {
-                int index = stack.pop();
-                answer[index] = i - index;
-            }
-
-            stack.push(i);
+        for (String name : participant) {
+            count.putIfAbsent(name, 0);
+            count.put(name, count.get(name) + 1);
         }
 
-        while (!stack.isEmpty()) {
-            int index = stack.pop();
-            answer[index] = prices.length - index - 1;
+        for (String name : completion) {
+            int v = count.get(name) - 1;
+            count.put(name, v);
+            if (v == 0)
+                count.remove(name);
         }
-        return answer;
+
+        return count.keySet().iterator().next();
     }
 }
