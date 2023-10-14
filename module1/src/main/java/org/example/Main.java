@@ -14,58 +14,66 @@ public class Main {
 
     }
 
-    private static final String[][] precedences = {
-            "+-*".split(""),
-            "+*-".split(""),
-            "-+*".split(""),
-            "-*+".split(""),
-            "*+-".split(""),
-            "*-+".split(""),
-    };
+    private final int[][] maxMem = new int[202][202];
 
-    private long calculate(long lhs, long rhs, String op) {
-        return switch (op) {
-            case "+" -> lhs + rhs;
-            case "-" -> lhs - rhs;
-            case "*" -> lhs * rhs;
-            default -> 0;
-        };
+    private int max(int start, int end, String[] arr) {
+        if (maxMem[start][end] != Integer.MIN_VALUE) {
+            return maxMem[start][end];
+        }
+        if (end - start == 1)
+            return Integer.parseInt(arr[start]);
+
+        int max = Integer.MIN_VALUE;
+        for (int i = start + 1; i < end; i += 2) {
+            int l = max(start, i, arr);
+            int v;
+            if (arr[i].equals("+")) {
+                int r = max(i + 1, end, arr);
+                v = l + r;
+            } else {
+                int r = min(i + 1, end, arr);
+                v = l - r;
+            }
+            if (v > max)
+                max = v;
+        }
+        return maxMem[start][end] = max;
     }
 
-    private long calculate(List<String> tokens, String[] precedence) {
-        for (String op : precedence) {
-            for (int i = 0; i < tokens.size(); i++) {
-                if (tokens.get(i).equals(op)) {
-                    long lhs = Long.parseLong(tokens.get(i - 1));
-                    long rhs = Long.parseLong(tokens.get(i + 1));
-                    long result = calculate(lhs, rhs, op);
-                    tokens.remove(i - 1);
-                    tokens.remove(i - 1);
-                    tokens.remove(i - 1);
-                    tokens.add(i - 1, String.valueOf(result));
-                    i -= 2;
-                }
-            }
+    private final int[][] minMem = new int[202][202];
+
+    private int min(int start, int end, String[] arr) {
+        if (minMem[start][end] != Integer.MIN_VALUE) {
+            return minMem[start][end];
         }
-        return Long.parseLong(tokens.get(0));
+        if (end - start == 1)
+            return Integer.parseInt(arr[start]);
+
+        int min = Integer.MAX_VALUE;
+        for (int i = start + 1; i < end; i += 2) {
+            int l = min(start, i, arr);
+            int v;
+            if (arr[i].equals("+")) {
+                int r = min(i + 1, end, arr);
+                v = l + r;
+            } else {
+                int r = max(i + 1, end, arr);
+                v = l - r;
+            }
+            if (v < min)
+                min = v;
+        }
+        return minMem[start][end] = min;
     }
 
-    public long solution(String expression) {
-        StringTokenizer tokenizer =
-                new StringTokenizer(expression, "+-*", true);
-        List<String> tokens = new ArrayList<>();
-        while (tokenizer.hasMoreTokens()) {
-            tokens.add(tokenizer.nextToken());
+    public int solution(String[] arr) {
+        for (int[] row : maxMem) {
+            Arrays.fill(row, Integer.MIN_VALUE);
+        }
+        for (int[] row : minMem) {
+            Arrays.fill(row, Integer.MIN_VALUE);
         }
 
-        long max = 0;
-        for (String[] precedence : precedences) {
-            long value = Math.abs(
-                    calculate(new ArrayList<>(tokens), precedence));
-            if (value > max) {
-                max = value;
-            }
-        }
-        return max;
+        return max(0, arr.length, arr);
     }
 }
