@@ -1,8 +1,9 @@
 package org.example;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
+import java.util.StringTokenizer;
 
 public class Main {
 
@@ -13,22 +14,58 @@ public class Main {
 
     }
 
-    public double getSlope(int x1, int y1, int x2, int y2) {
-        return (double)(y2 - y1) / (x2 - x1);
+    private static final String[][] precedences = {
+            "+-*".split(""),
+            "+*-".split(""),
+            "-+*".split(""),
+            "-*+".split(""),
+            "*+-".split(""),
+            "*-+".split(""),
+    };
+
+    private long calculate(long lhs, long rhs, String op) {
+        return switch (op) {
+            case "+" -> lhs + rhs;
+            case "-" -> lhs - rhs;
+            case "*" -> lhs * rhs;
+            default -> 0;
+        };
     }
 
-    public int solution(int[][] dots) {
-        Set<Double> slopes = new HashSet<>();
-        for (int i = 0; i < dots.length; i++) {
-            for (int j = i + 1; j < dots.length; j++) {
-                double slope = getSlope(dots[i][0], dots[i][1],
-                        dots[j][0], dots[j][1]);
-                if (slopes.contains(slope)) {
-                    return 1;
+    private long calculate(List<String> tokens, String[] precedence) {
+        for (String op : precedence) {
+            for (int i = 0; i < tokens.size(); i++) {
+                if (tokens.get(i).equals(op)) {
+                    long lhs = Long.parseLong(tokens.get(i - 1));
+                    long rhs = Long.parseLong(tokens.get(i + 1));
+                    long result = calculate(lhs, rhs, op);
+                    tokens.remove(i - 1);
+                    tokens.remove(i - 1);
+                    tokens.remove(i - 1);
+                    tokens.add(i - 1, String.valueOf(result));
+                    i -= 2;
                 }
-                slopes.add(slope);
             }
         }
-        return 0;
+        return Long.parseLong(tokens.get(0));
+    }
+
+    public long solution(String expression) {
+        StringTokenizer tokenizer =
+                new StringTokenizer(expression, "+-*", true);
+        List<String> tokens = new ArrayList<>();
+        while (tokenizer.hasMoreTokens()) {
+            tokens.add(tokenizer.nextToken());
+        }
+
+        long max = 0;
+        for (String[] precedence : precedences) {
+            long value = Math.abs(
+                    calculate(new ArrayList<>(tokens), precedence));
+            if (value > max) {
+                max = value;
+            }
+        }
+        return max;
     }
 }
