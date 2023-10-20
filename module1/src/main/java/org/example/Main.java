@@ -1,13 +1,6 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.function.Consumer;
 
 public class Main {
 
@@ -18,78 +11,43 @@ public class Main {
 
     }
 
-    private void forEachKey(int index, String prefix, String[] tokens,
-            Consumer<String> action) {
-        if (index == tokens.length - 1) {
-            action.accept(prefix);
-            return;
+    public int solution(int[][] board, int[][] skills) {
+        int[][] changes =
+                new int[board.length + 1][board[0].length + 1];
+
+        for (int[] skill : skills) {
+            int type = skill[0];
+            int r1 = skill[1];
+            int c1 = skill[2];
+            int r2 = skill[3] + 1;
+            int c2 = skill[4] + 1;
+            int degree = skill[5];
+            if (type == 1)
+                degree = -degree;
+
+            changes[r1][c1] += degree;
+            changes[r2][c1] -= degree;
+            changes[r1][c2] -= degree;
+            changes[r2][c2] += degree;
         }
 
-        forEachKey(index + 1, prefix + tokens[index], tokens, action);
-        forEachKey(index + 1, prefix + "-", tokens, action);
-    }
+        for (int y = 0; y < changes.length; y++) {
+            for (int x = 0; x < changes[y].length; x++) {
+                int left = x > 0 ? changes[y][x - 1] : 0;
+                int up = y > 0 ? changes[y - 1][x] : 0;
+                int diag = x > 0 && y > 0 ? changes[y - 1][x - 1] : 0;
 
-    private Map<String, List<Integer>> buildScoresMap(String[] info) {
-        Map<String, List<Integer>> scoresMap = new HashMap<>();
-
-        for (String s : info) {
-            String[] tokens = s.split(" ");
-            int score = Integer.parseInt(tokens[tokens.length - 1]);
-            forEachKey(0, "", tokens, key -> {
-                scoresMap.putIfAbsent(key, new ArrayList<>());
-                scoresMap.get(key).add(score);
-            });
-        }
-
-        for (List<Integer> list : scoresMap.values()) {
-            Collections.sort(list);
-        }
-
-        return scoresMap;
-    }
-
-    private int binarySearch(int score, List<Integer> scores) {
-        int start = 0;  // inclusive
-        int end = scores.size() - 1;  // inclusive
-
-        while (end > start) {
-            int mid = (start + end) / 2;
-
-            if (scores.get(mid) >= score) {
-                end = mid;
-            } else {
-                start = mid + 1;
+                changes[y][x] += left + up - diag;
             }
         }
 
-        if (scores.get(start) < score) {
-            return scores.size();
+        int safe = 0;
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                if (board[y][x] + changes[y][x] > 0)
+                    safe++;
+            }
         }
-        return start;
-    }
-
-    private int count(String query, Map<String, List<Integer>> scoresMap) {
-        String[] tokens = query.split(" (and )?");
-
-        String key
-                = String.join("", Arrays.copyOf(tokens, tokens.length - 1));
-
-        if (!scoresMap.containsKey(key))
-            return 0;
-        List<Integer> scores = scoresMap.get(key);
-
-        int score = Integer.parseInt(tokens[tokens.length - 1]);
-
-        return scores.size() - binarySearch(score, scoresMap.get(key));
-    }
-
-    public int[] solution(String[] info, String[] query) {
-        Map<String, List<Integer>> scoresMap = buildScoresMap(info);
-
-        int[] answer = new int[query.length];
-        for (int i = 0; i < answer.length; i++) {
-            answer[i] = count(query[i], scoresMap);
-        }
-        return answer;
+        return safe;
     }
 }
