@@ -1,6 +1,8 @@
 package org.example;
 
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
 
@@ -11,43 +13,55 @@ public class Main {
 
     }
 
-    public int solution(int[][] board, int[][] skills) {
-        int[][] changes =
-                new int[board.length + 1][board[0].length + 1];
+    private Set<Integer> getNextNodes(int node, Set<Integer> nodes,
+            boolean[][] tree) {
+        Set<Integer> nextNodes = new HashSet<>(nodes);
+        nextNodes.remove(node);
 
-        for (int[] skill : skills) {
-            int type = skill[0];
-            int r1 = skill[1];
-            int c1 = skill[2];
-            int r2 = skill[3] + 1;
-            int c2 = skill[4] + 1;
-            int degree = skill[5];
-            if (type == 1)
-                degree = -degree;
-
-            changes[r1][c1] += degree;
-            changes[r2][c1] -= degree;
-            changes[r1][c2] -= degree;
-            changes[r2][c2] += degree;
+        for (int next = 0; next < tree[node].length; next++) {
+            if (!tree[node][next])
+                continue;
+            nextNodes.add(next);
         }
+        return nextNodes;
+    }
 
-        for (int y = 0; y < changes.length; y++) {
-            for (int x = 0; x < changes[y].length; x++) {
-                int left = x > 0 ? changes[y][x - 1] : 0;
-                int up = y > 0 ? changes[y - 1][x] : 0;
-                int diag = x > 0 && y > 0 ? changes[y - 1][x - 1] : 0;
+    private int getMaxSheep(Set<Integer> nodes, int sheep, int wolf,
+            int[] info, boolean[][] tree) {
+        int maxSheep = sheep;
 
-                changes[y][x] += left + up - diag;
+        for (int node : nodes) {
+            int nextSheep = sheep;
+            int nextWolf = wolf;
+
+            if (info[node] == 0) {
+                nextSheep += 1;
+            } else {
+                nextWolf += 1;
+            }
+
+            if (nextWolf >= nextSheep)
+                continue;
+
+            int s = getMaxSheep(getNextNodes(node, nodes, tree),
+                    nextSheep, nextWolf, info, tree);
+            if (s > maxSheep) {
+                maxSheep = s;
             }
         }
 
-        int safe = 0;
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board[y].length; x++) {
-                if (board[y][x] + changes[y][x] > 0)
-                    safe++;
-            }
+        return maxSheep;
+    }
+
+    public int solution(int[] info, int[][] edges) {
+        boolean[][] tree = new boolean[info.length][info.length];
+        for (int[] edge : edges) {
+            tree[edge[0]][edge[1]] = true;
         }
-        return safe;
+
+        Set<Integer> nodes = new HashSet<>();
+        nodes.add(0);
+
+        return getMaxSheep(nodes, 0, 0, info, tree);
     }
 }
