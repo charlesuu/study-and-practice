@@ -1,10 +1,11 @@
 package org.example;
 
-import java.util.HashSet;
 import java.util.Scanner;
-import java.util.Set;
 
 public class Main {
+
+    private static final int dx[] = {0, -1, 1, 0};
+    private static final int dy[] = {-1, 0, 0, 1};
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -13,55 +14,66 @@ public class Main {
 
     }
 
-    private Set<Integer> getNextNodes(int node, Set<Integer> nodes,
-            boolean[][] tree) {
-        Set<Integer> nextNodes = new HashSet<>(nodes);
-        nextNodes.remove(node);
-
-        for (int next = 0; next < tree[node].length; next++) {
-            if (!tree[node][next])
+    private boolean isNextToVolunteer(char[][] room, int x, int y, int exclude) {
+        for (int d = 0; d < 4; d++) {
+            if (d == exclude)
                 continue;
-            nextNodes.add(next);
+
+            int nx = x + dx[d];
+            int ny = y + dy[d];
+            if (ny < 0 || ny >= room.length || nx < 0 || nx >= room[ny].length)
+                continue;
+            if (room[ny][nx] == 'P')
+                return true;
         }
-        return nextNodes;
+        return false;
     }
 
-    private int getMaxSheep(Set<Integer> nodes, int sheep, int wolf,
-            int[] info, boolean[][] tree) {
-        int maxSheep = sheep;
+    private boolean isDistanced(char[][] room, int x, int y) {
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d];
+            int ny = y + dy[d];
+            if (ny < 0 || ny >= room.length || nx < 0 || nx >= room[ny].length)
+                continue;
 
-        for (int node : nodes) {
-            int nextSheep = sheep;
-            int nextWolf = wolf;
+            switch (room[ny][nx]) {
+                case 'P':
+                    return false;
+                case 'O':
+                    if (isNextToVolunteer(room, nx, ny, 3 - d))
+                        return false;
+                    break;
+            }
+        }
+        return true;
+    }
 
-            if (info[node] == 0) {
-                nextSheep += 1;
+    private boolean isDistanced(char[][] room) {
+        for (int y = 0; y < room.length; y++) {
+            for (int x = 0; x < room[y].length; x++) {
+                if (room[y][x] != 'P')
+                    continue;
+                if (!isDistanced(room, x, y))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public int[] solution(String[][] places) {
+        int[] answer = new int[places.length];
+        for (int i = 0; i < answer.length; i++) {
+            String[] place = places[i];
+            char[][] room = new char[place.length][];
+            for (int j = 0; j < room.length; j++) {
+                room[j] = place[j].toCharArray();
+            }
+            if (isDistanced(room)) {
+                answer[i] = 1;
             } else {
-                nextWolf += 1;
-            }
-
-            if (nextWolf >= nextSheep)
-                continue;
-
-            int s = getMaxSheep(getNextNodes(node, nodes, tree),
-                    nextSheep, nextWolf, info, tree);
-            if (s > maxSheep) {
-                maxSheep = s;
+                answer[i] = 0;
             }
         }
-
-        return maxSheep;
-    }
-
-    public int solution(int[] info, int[][] edges) {
-        boolean[][] tree = new boolean[info.length][info.length];
-        for (int[] edge : edges) {
-            tree[edge[0]][edge[1]] = true;
-        }
-
-        Set<Integer> nodes = new HashSet<>();
-        nodes.add(0);
-
-        return getMaxSheep(nodes, 0, 0, info, tree);
+        return answer;
     }
 }
