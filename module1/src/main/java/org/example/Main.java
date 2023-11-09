@@ -1,79 +1,59 @@
 package org.example;
 
-import java.util.Scanner;
-
 public class Main {
 
-    private static final int dx[] = {0, -1, 1, 0};
-    private static final int dy[] = {-1, 0, 0, 1};
+    private static final String[][] precedences = {
+            "+-*".split(""),
+            "+*-".split(""),
+            "-+*".split(""),
+            "-*+".split(""),
+            "*+-".split(""),
+            "*-+".split(""),
+    };
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        StringBuilder sb = new StringBuilder();
-
-
+    private long calculate(long lhs, long rhs, String op) {
+        return switch (op) {
+            case "+" -> lhs + rhs;
+            case "-" -> lhs - rhs;
+            case "*" -> lhs * rhs;
+            default -> 0;
+        };
     }
 
-    private boolean isNextToVolunteer(char[][] room, int x, int y, int exclude) {
-        for (int d = 0; d < 4; d++) {
-            if (d == exclude)
-                continue;
-
-            int nx = x + dx[d];
-            int ny = y + dy[d];
-            if (ny < 0 || ny >= room.length || nx < 0 || nx >= room[ny].length)
-                continue;
-            if (room[ny][nx] == 'P')
-                return true;
+    private long calculate(List<String> tokens, String[] precedence) {
+        for (String op : precedence) {
+            for (int i = 0; i < tokens.size(); i++) {
+                if (tokens.get(i).equals(op)) {
+                    long lhs = Long.parseLong(tokens.get(i - 1));
+                    long rhs = Long.parseLong(tokens.get(i + 1));
+                    long result = calculate(lhs, rhs, op);
+                    tokens.remove(i - 1);
+                    tokens.remove(i - 1);
+                    tokens.remove(i - 1);
+                    tokens.add(i - 1, String.valueOf(result));
+                    i -= 2;
+                }
+            }
         }
-        return false;
+        return Long.parseLong(tokens.get(0));
     }
 
-    private boolean isDistanced(char[][] room, int x, int y) {
-        for (int d = 0; d < 4; d++) {
-            int nx = x + dx[d];
-            int ny = y + dy[d];
-            if (ny < 0 || ny >= room.length || nx < 0 || nx >= room[ny].length)
-                continue;
+    public long solution(String expression) {
+        StringTokenizer tokenizer =
+                new StringTokenizer(expression, "+-*", true);
+        List<String> tokens = new ArrayList<>();
+        while (tokenizer.hasMoreTokens()) {
+            tokens.add(tokenizer.nextToken());
+        }
 
-            switch (room[ny][nx]) {
-                case 'P':
-                    return false;
-                case 'O':
-                    if (isNextToVolunteer(room, nx, ny, 3 - d))
-                        return false;
-                    break;
+        long max = 0;
+        for (String[] precedence : precedences) {
+            long value = Math.abs(
+                    calculate(new ArrayList<>(tokens), precedence));
+            if (value > max) {
+                max = value;
             }
         }
-        return true;
-    }
-
-    private boolean isDistanced(char[][] room) {
-        for (int y = 0; y < room.length; y++) {
-            for (int x = 0; x < room[y].length; x++) {
-                if (room[y][x] != 'P')
-                    continue;
-                if (!isDistanced(room, x, y))
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    public int[] solution(String[][] places) {
-        int[] answer = new int[places.length];
-        for (int i = 0; i < answer.length; i++) {
-            String[] place = places[i];
-            char[][] room = new char[place.length][];
-            for (int j = 0; j < room.length; j++) {
-                room[j] = place[j].toCharArray();
-            }
-            if (isDistanced(room)) {
-                answer[i] = 1;
-            } else {
-                answer[i] = 0;
-            }
-        }
-        return answer;
+        return max;
     }
 }
