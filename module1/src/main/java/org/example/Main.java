@@ -1,59 +1,89 @@
 package org.example;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class Main {
 
-    private static final String[][] precedences = {
-            "+-*".split(""),
-            "+*-".split(""),
-            "-+*".split(""),
-            "-*+".split(""),
-            "*+-".split(""),
-            "*-+".split(""),
-    };
+    private static class Course {
 
-    private long calculate(long lhs, long rhs, String op) {
-        return switch (op) {
-            case "+" -> lhs + rhs;
-            case "-" -> lhs - rhs;
-            case "*" -> lhs * rhs;
-            default -> 0;
-        };
+        public final String course;
+        public final int occurrences;
+
+        public Course(String course, int occurrences) {
+            this.course = course;
+            this.occurrences = occurrences;
+        }
     }
 
-    private long calculate(List<String> tokens, String[] precedence) {
-        for (String op : precedence) {
-            for (int i = 0; i < tokens.size(); i++) {
-                if (tokens.get(i).equals(op)) {
-                    long lhs = Long.parseLong(tokens.get(i - 1));
-                    long rhs = Long.parseLong(tokens.get(i + 1));
-                    long result = calculate(lhs, rhs, op);
-                    tokens.remove(i - 1);
-                    tokens.remove(i - 1);
-                    tokens.remove(i - 1);
-                    tokens.add(i - 1, String.valueOf(result));
-                    i -= 2;
-                }
-            }
-        }
-        return Long.parseLong(tokens.get(0));
+    public static void main(String[] args) {
+        
     }
 
-    public long solution(String expression) {
-        StringTokenizer tokenizer =
-                new StringTokenizer(expression, "+-*", true);
-        List<String> tokens = new ArrayList<>();
-        while (tokenizer.hasMoreTokens()) {
-            tokens.add(tokenizer.nextToken());
-        }
+    private void getCourses(char nextMenu, Set<String> selectedMenus,
+            List<Set<String>> orderList,
+            Map<Integer, List<Course>> courses) {
+        int occurrences = (int)orderList.stream()
+                .filter(order -> order.containsAll(selectedMenus))
+                .count();
+        if (occurrences < 2)
+            return;
 
-        long max = 0;
-        for (String[] precedence : precedences) {
-            long value = Math.abs(
-                    calculate(new ArrayList<>(tokens), precedence));
-            if (value > max) {
-                max = value;
+        int size = selectedMenus.size();
+        if (courses.containsKey(size)) {
+            List<Course> courseList = courses.get(size);
+            Course course = new Course(selectedMenus.stream()
+                    .sorted()
+                    .collect(Collectors.joining("")),
+                    occurrences);
+
+            Course original = courseList.get(0);
+            if (original.occurrences < occurrences) {
+                courseList.clear();
+                courseList.add(course);
+            } else if (original.occurrences == occurrences) {
+                courseList.add(course);
             }
         }
-        return max;
+
+        if (size >= 10)
+            return;
+        for (char menuChar = nextMenu; menuChar <= 'Z'; menuChar++) {
+            String menu = String.valueOf(menuChar);
+            selectedMenus.add(menu);
+            getCourses((char)(menuChar + 1), selectedMenus, orderList,
+                    courses);
+            selectedMenus.remove(menu);
+        }
+    }
+
+    public String[] solution(String[] orders, int[] course) {
+        List<Set<String>> orderList = Arrays.stream(orders)
+                .map(String::chars)
+                .map(charStream -> charStream
+                        .mapToObj(menu -> String.valueOf((char)menu))
+                        .collect(Collectors.toSet()))
+                .collect(Collectors.toList());
+
+        Map<Integer, List<Course>> courses = new HashMap<>();
+        for (int length : course) {
+            List<Course> list = new ArrayList<>();
+            list.add(new Course("", 0));
+            courses.put(length, list);
+        }
+        getCourses('A', new HashSet<>(), orderList, courses);
+
+        return courses.values().stream()
+                .filter(list -> list.get(0).occurrences > 0)
+                .flatMap(List::stream)
+                .map(c -> c.course)
+                .sorted()
+                .toArray(String[]::new);
     }
 }
