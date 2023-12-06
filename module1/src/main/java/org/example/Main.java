@@ -1,8 +1,6 @@
 package org.example;
 
 import java.util.Arrays;
-import java.util.PriorityQueue;
-import java.util.stream.Collectors;
 
 public class Main {
 
@@ -10,18 +8,38 @@ public class Main {
 
     }
 
-    public int solution(int[] ability, int number) {
-        PriorityQueue<Integer> pq = Arrays.stream(ability)
-                .boxed()
-                .collect(Collectors.toCollection(PriorityQueue::new));
+    private boolean isValid(int d, int[] rocks, int n) {
+        int removed = 0;  // 제거한 바위의 개수
+        int last = 0;  // 마지막 바위의 위치
+        for (int rock : rocks) {
+            if (rock - last < d) {
+                removed++;
+                continue;
+            }
 
-        for (int i = 0; i < number; i++) {
-            int a = pq.poll();
-            int b = pq.poll();
-            pq.add(a + b);
-            pq.add(a + b);
+            last = rock;
+        }
+        return removed <= n;
+    }
+
+    public int solution(int distance, int[] rocks, int n) {
+        rocks = Arrays.copyOf(rocks, rocks.length + 1);
+        rocks[rocks.length - 1] = distance;
+        Arrays.sort(rocks);
+
+        int start = 1;
+        int end = distance + 1;
+
+        while (end - start > 1) {
+            int d = (start + end) / 2;
+
+            if (isValid(d, rocks, n)) {
+                start = d;
+            } else {
+                end = d;
+            }
         }
 
-        return pq.stream().reduce(0, Integer::sum);
+        return start;
     }
 }
