@@ -1,42 +1,30 @@
 package org.example;
 
-import java.util.Arrays;
-
 public class Main {
 
     public static void main(String[] args) {
 
     }
 
-    private boolean isValid(int d, int[] rocks, int n) {
-        int removed = 0;  // 제거한 바위의 개수
-        int last = 0;  // 마지막 바위의 위치
-        for (int rock : rocks) {
-            if (rock - last < d) {
-                removed++;
-                continue;
-            }
-
-            last = rock;
+    private boolean isValid(long t, int n, int[] times) {
+        long c = 0;
+        for (int time : times) {
+            c += t / time;
         }
-        return removed <= n;
+        return c >= n;
     }
 
-    public int solution(int distance, int[] rocks, int n) {
-        rocks = Arrays.copyOf(rocks, rocks.length + 1);
-        rocks[rocks.length - 1] = distance;
-        Arrays.sort(rocks);
+    public long solution(int n, int[] times) {
+        long start = 1;
+        long end = 1000000000000000000L;
 
-        int start = 1;
-        int end = distance + 1;
+        while (end > start) {
+            long t = (start + end) / 2;
 
-        while (end - start > 1) {
-            int d = (start + end) / 2;
-
-            if (isValid(d, rocks, n)) {
-                start = d;
+            if (isValid(t, n, times)) {
+                end = t;
             } else {
-                end = d;
+                start = t + 1;
             }
         }
 
