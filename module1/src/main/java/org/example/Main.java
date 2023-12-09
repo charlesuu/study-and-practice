@@ -1,7 +1,11 @@
 package org.example;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -9,21 +13,33 @@ public class Main {
 
     }
 
-    public String solution(String[] participant, String[] completion) {
-        Map<String, Integer> count = new HashMap<>();
-
-        for (String name : participant) {
-            count.putIfAbsent(name, 0);
-            count.put(name, count.get(name) + 1);
+    public int[] solution(String[] id_list, String[] report, int k) {
+        Map<String, Set<String>> reports = new HashMap<>();
+        for (String id : id_list) {
+            reports.put(id, new HashSet<>());
         }
 
-        for (String name : completion) {
-            int v = count.get(name) - 1;
-            count.put(name, v);
-            if (v == 0)
-                count.remove(name);
+        Map<String, Integer> reported = new HashMap<>();
+
+        for (String r : report) {
+            String[] tokens = r.split(" ");
+            String reporter = tokens[0];
+            String target = tokens[1];
+
+            Set<String> set = reports.get(reporter);
+            if (set.contains(target))
+                continue;
+
+            set.add(target);
+            reported.putIfAbsent(target, 0);
+            reported.put(target, reported.get(target) + 1);
         }
 
-        return count.keySet().iterator().next();
+        Set<String> banned = reported.keySet().stream()
+                .filter(id -> reported.get(id) >= k).collect(Collectors.toSet());
+
+        return Arrays.stream(id_list)
+                .mapToInt(id -> (int)reports.get(id).stream().filter(banned::contains).count())
+                .toArray();
     }
 }
