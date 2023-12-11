@@ -1,45 +1,48 @@
 package org.example;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class Main {
 
     public static void main(String[] args) {
 
     }
 
-    public int[] solution(String[] id_list, String[] report, int k) {
-        Map<String, Set<String>> reports = new HashMap<>();
-        for (String id : id_list) {
-            reports.put(id, new HashSet<>());
+    public int solution(int[][] board, int[][] skills) {
+        int[][] changes =
+                new int[board.length + 1][board[0].length + 1];
+
+        for (int[] skill : skills) {
+            int type = skill[0];
+            int r1 = skill[1];
+            int c1 = skill[2];
+            int r2 = skill[3] + 1;
+            int c2 = skill[4] + 1;
+            int degree = skill[5];
+            if (type == 1)
+                degree = -degree;
+
+            changes[r1][c1] += degree;
+            changes[r2][c1] -= degree;
+            changes[r1][c2] -= degree;
+            changes[r2][c2] += degree;
         }
 
-        Map<String, Integer> reported = new HashMap<>();
+        for (int y = 0; y < changes.length; y++) {
+            for (int x = 0; x < changes[y].length; x++) {
+                int left = x > 0 ? changes[y][x - 1] : 0;
+                int up = y > 0 ? changes[y - 1][x] : 0;
+                int diag = x > 0 && y > 0 ? changes[y - 1][x - 1] : 0;
 
-        for (String r : report) {
-            String[] tokens = r.split(" ");
-            String reporter = tokens[0];
-            String target = tokens[1];
-
-            Set<String> set = reports.get(reporter);
-            if (set.contains(target))
-                continue;
-
-            set.add(target);
-            reported.putIfAbsent(target, 0);
-            reported.put(target, reported.get(target) + 1);
+                changes[y][x] += left + up - diag;
+            }
         }
 
-        Set<String> banned = reported.keySet().stream()
-                .filter(id -> reported.get(id) >= k).collect(Collectors.toSet());
-
-        return Arrays.stream(id_list)
-                .mapToInt(id -> (int)reports.get(id).stream().filter(banned::contains).count())
-                .toArray();
+        int safe = 0;
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                if (board[y][x] + changes[y][x] > 0)
+                    safe++;
+            }
+        }
+        return safe;
     }
 }
