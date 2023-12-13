@@ -1,8 +1,8 @@
 package org.example;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -10,38 +10,18 @@ public class Main {
 
     }
 
-    private final Map<String, Integer> mem = new HashMap<>();
+    public int solution(int[] ability, int number) {
+        PriorityQueue<Integer> pq = Arrays.stream(ability)
+                .boxed()
+                .collect(Collectors.toCollection(PriorityQueue::new));
 
-    private String toString(int student, boolean[] isChosen) {
-        return student + Arrays.toString(isChosen);
-    }
-
-    private int max(int student, boolean[] isChosen, int[][] ability) {
-        if (student == ability.length)
-            return 0;
-        String memKey = toString(student, isChosen);
-        if (mem.containsKey(memKey))
-            return mem.get(memKey);
-
-        int max = max(student + 1, isChosen, ability);
-
-        for (int i = 0; i < ability[student].length; i++) {
-            if (isChosen[i])
-                continue;
-            isChosen[i] = true;
-            int score = max(student + 1, isChosen, ability)
-                    + ability[student][i];
-            if (score > max) {
-                max = score;
-            }
-            isChosen[i] = false;
+        for (int i = 0; i < number; i++) {
+            int a = pq.poll();
+            int b = pq.poll();
+            pq.add(a + b);
+            pq.add(a + b);
         }
 
-        mem.put(memKey, max);
-        return max;
-    }
-
-    public int solution(int[][] ability) {
-        return max(0, new boolean[ability.length], ability);
+        return pq.stream().reduce(0, Integer::sum);
     }
 }
