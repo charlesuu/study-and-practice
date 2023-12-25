@@ -1,38 +1,44 @@
 package org.example;
 
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.Stack;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
+    }
 
-        int[] dwf = new int[9];
+    private void visitAll(int computer, int[][] computers,
+            boolean[] isVisited) {
+        Stack<Integer> stack = new Stack<>();
+        stack.push(computer);
 
-        int sum = 0;
-        for (int i = 0; i < 9; i++) {
-            int height = sc.nextInt();
+        while (!stack.isEmpty()) {
+            int c = stack.pop();
 
-            dwf[i] = height;
-            sum += height;
-        }
-        Arrays.sort(dwf);
+            if (isVisited[c])
+                continue;
+            isVisited[c] = true;
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = i + 1; j < 9; j++) {
-                if (sum - dwf[i] - dwf[j] == 100) {
-                    for (int k = 0; k < 9; k++) {
-                        if (i == k || j == k) {
-                            continue;
-                        }
-                        System.out.println(dwf[k]);
-                    }
-                    return;
-                }
+            for (int next = 0; next < computers[c].length; next++) {
+                if (computers[c][next] == 0)
+                    continue;
+                stack.push(next);
             }
         }
+    }
 
+    public int solution(int n, int[][] computers) {
+        boolean[] isVisited = new boolean[n];
+        int answer = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (isVisited[i])
+                continue;
+            visitAll(i, computers, isVisited);
+            answer++;
+        }
+
+        return answer;
     }
 }
