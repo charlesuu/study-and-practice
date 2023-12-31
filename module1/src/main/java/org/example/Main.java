@@ -1,6 +1,8 @@
 package org.example;
 
-import java.util.Stack;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
 
@@ -8,37 +10,38 @@ public class Main {
 
     }
 
-    private void visitAll(int computer, int[][] computers,
-            boolean[] isVisited) {
-        Stack<Integer> stack = new Stack<>();
-        stack.push(computer);
+    private final Map<String, Integer> mem = new HashMap<>();
 
-        while (!stack.isEmpty()) {
-            int c = stack.pop();
-
-            if (isVisited[c])
-                continue;
-            isVisited[c] = true;
-
-            for (int next = 0; next < computers[c].length; next++) {
-                if (computers[c][next] == 0)
-                    continue;
-                stack.push(next);
-            }
-        }
+    private String toString(int student, boolean[] isChosen) {
+        return student + Arrays.toString(isChosen);
     }
 
-    public int solution(int n, int[][] computers) {
-        boolean[] isVisited = new boolean[n];
-        int answer = 0;
+    private int max(int student, boolean[] isChosen, int[][] ability) {
+        if (student == ability.length)
+            return 0;
+        String memKey = toString(student, isChosen);
+        if (mem.containsKey(memKey))
+            return mem.get(memKey);
 
-        for (int i = 0; i < n; i++) {
-            if (isVisited[i])
+        int max = max(student + 1, isChosen, ability);
+
+        for (int i = 0; i < ability[student].length; i++) {
+            if (isChosen[i])
                 continue;
-            visitAll(i, computers, isVisited);
-            answer++;
+            isChosen[i] = true;
+            int score = max(student + 1, isChosen, ability)
+                    + ability[student][i];
+            if (score > max) {
+                max = score;
+            }
+            isChosen[i] = false;
         }
 
-        return answer;
+        mem.put(memKey, max);
+        return max;
+    }
+
+    public int solution(int[][] ability) {
+        return max(0, new boolean[ability.length], ability);
     }
 }
