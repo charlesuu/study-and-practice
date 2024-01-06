@@ -1,34 +1,59 @@
 package org.example;
 
+import java.util.Scanner;
+
+//recall
 public class Main {
 
-    private static final int[] dx = {0, 1, 0, -1};
-    private static final int[] dy = {1, 0, -1, 0};
+    public static final boolean[] selected = new boolean[9];
+    public static final int[] selectSpace = new int[9];
+
+    public static StringBuilder sb = new StringBuilder();
+    public static int N;
+    public static int M;
+
 
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
 
+        N = sc.nextInt();
+        M = sc.nextInt();
+
+        permutation(1);
+
+        System.out.println(sb);
     }
 
-    public int[] solution(String command) {
-        int x = 0;
-        int y = 0;
-        int d = 0;
-
-        for (char c : command.toCharArray()) {
-            switch (c) {
-                case 'R' -> d = (d + 1) % 4;
-                case 'L' -> d = (d + 3) % 4;
-                case 'G' -> {
-                    x += dx[d];
-                    y += dy[d];
-                }
-                case 'B' -> {
-                    x -= dx[d];
-                    y -= dy[d];
-                }
-            }
+    private static void permutation(int depth) {
+        if (depth == M + 1) {
+            print();
+            return;
         }
 
-        return new int[]{x, y};
+        for (int i = 1; i <= N; i++) {
+            if (selected[i]) {
+                continue;
+            }
+
+            selected[i] = true;
+            selectSpace[depth] = i;
+            permutation(depth + 1);
+
+            selected[i] = false;
+        }
+
+
+    }
+
+    private static void print() {
+        for (int i = 1; i < M; i++) {
+            sb.append(selectSpace[i]).append(" ");
+        }
+        sb.append("\n");
     }
 }
+
+
+
+
+
