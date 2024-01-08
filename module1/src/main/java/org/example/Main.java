@@ -5,55 +5,50 @@ import java.util.Scanner;
 //recall
 public class Main {
 
-    public static final boolean[] selected = new boolean[9];
-    public static final int[] selectSpace = new int[9];
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
 
-    public static StringBuilder sb = new StringBuilder();
-    public static int N;
-    public static int M;
+		int n = sc.nextInt();
+		sc.nextLine();
+		int answer = 0;
 
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < n; i++) {
+			String[] line = sc.nextLine().split(" ");
+			int x;
+			switch (line[0]) {
+				case "add":
+					x = Integer.valueOf(line[1]) - 1;
+					answer = answer | (1 << x);
+					break;
+				case "remove":
+					x = Integer.valueOf(line[1]) - 1;
+					answer = answer & ~(1 << x);
+					break;
+				case "check":
+					x = Integer.valueOf(line[1]) - 1;
+					if ((answer & (1 << x)) == 0) {
+						sb.append(0).append("\n");
+					} else {
+						sb.append(1).append("\n");
+					}
+					break;
+				case "toggle":
+					x = Integer.valueOf(line[1]) - 1;
+					answer = answer ^ (1 << x);
+					break;
+				case "all":
+					answer = Integer.MAX_VALUE;
+					break;
+				case "empty":
+					answer = 0;
+					break;
+				default:
+					System.out.println("sumthing wrong");
+					break;
+			}
+		}
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-
-        N = sc.nextInt();
-        M = sc.nextInt();
-
-        permutation(1);
-
-        System.out.println(sb);
-    }
-
-    private static void permutation(int depth) {
-        if (depth == M + 1) {
-            print();
-            return;
-        }
-
-        for (int i = 1; i <= N; i++) {
-            if (selected[i]) {
-                continue;
-            }
-
-            selected[i] = true;
-            selectSpace[depth] = i;
-            permutation(depth + 1);
-
-            selected[i] = false;
-        }
-
-
-    }
-
-    private static void print() {
-        for (int i = 1; i < M; i++) {
-            sb.append(selectSpace[i]).append(" ");
-        }
-        sb.append("\n");
-    }
+		System.out.println(sb);
+	}
 }
-
-
-
-
-
