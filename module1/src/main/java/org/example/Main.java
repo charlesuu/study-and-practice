@@ -1,54 +1,46 @@
 package org.example;
 
-import java.util.Scanner;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 //recall
 public class Main {
 
 	public static void main(String[] args) {
-		Scanner sc = new Scanner(System.in);
 
-		int n = sc.nextInt();
-		sc.nextLine();
-		int answer = 0;
+	}
 
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < n; i++) {
-			String[] line = sc.nextLine().split(" ");
-			int x;
-			switch (line[0]) {
-				case "add":
-					x = Integer.valueOf(line[1]) - 1;
-					answer = answer | (1 << x);
-					break;
-				case "remove":
-					x = Integer.valueOf(line[1]) - 1;
-					answer = answer & ~(1 << x);
-					break;
-				case "check":
-					x = Integer.valueOf(line[1]) - 1;
-					if ((answer & (1 << x)) == 0) {
-						sb.append(0).append("\n");
-					} else {
-						sb.append(1).append("\n");
-					}
-					break;
-				case "toggle":
-					x = Integer.valueOf(line[1]) - 1;
-					answer = answer ^ (1 << x);
-					break;
-				case "all":
-					answer = Integer.MAX_VALUE;
-					break;
-				case "empty":
-					answer = 0;
-					break;
-				default:
-					System.out.println("sumthing wrong");
-					break;
-			}
+	public int[] solution(String[] id_list, String[] report, int k) {
+		Map<String, Set<String>> reports = new HashMap<>();
+		for (String id : id_list) {
+			reports.put(id, new HashSet<>());
 		}
 
-		System.out.println(sb);
+		Map<String, Integer> reported = new HashMap<>();
+
+		for (String r : report) {
+			String[] tokens = r.split(" ");
+			String reporter = tokens[0];
+			String target = tokens[1];
+
+			Set<String> set = reports.get(reporter);
+			if (set.contains(target))
+				continue;
+
+			set.add(target);
+			reported.putIfAbsent(target, 0);
+			reported.put(target, reported.get(target) + 1);
+		}
+
+		Set<String> banned = reported.keySet().stream()
+				.filter(id -> reported.get(id) >= k).collect(Collectors.toSet());
+
+		return Arrays.stream(id_list)
+				.mapToInt(id -> (int)reports.get(id).stream().filter(banned::contains).count())
+				.toArray();
 	}
 }
