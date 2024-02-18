@@ -4,58 +4,112 @@ import java.util.Scanner;
 
 public class Main {
 
+    static String[][] cubes = {
+            {"0010",
+            "1111",
+            "0010"},
+            {"0100",
+            "1111",
+            "1000"},
+            {"0010",
+            "1111",
+            "0100"},
+            {"0001",
+            "1111",
+            "1000"},
+            {"0001",
+            "1111",
+            "0100"},
+            {"11100",
+            "00111"},
+            {"1100",
+            "0111",
+            "0010"},
+            {"1100",
+            "0111",
+            "0001"},
+            {"0010",
+            "1110",
+            "0011"},
+            {"0001",
+            "1111",
+            "0001"},
+            {"1100",
+            "0110",
+            "0011"}
+    };
+
+    static String[] mirror(String[] b) {
+        String[] ans = new String[b.length];
+        for (int i = 0; i < b.length; i++) {
+            ans[i] = new StringBuilder(b[i]).reverse().toString();
+        }
+        return ans;
+    }
+
+    static String[] rotate(String[] b) {
+        String[] ans = new String[b[0].length()];
+        for (int j = 0; j < b[0].length(); j++) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = (int)b.length - 1; i >= 0; i--) {
+                sb.append(b[i].charAt(j));
+            }
+            ans[j] = sb.toString();
+        }
+        return ans;
+    }
+
+    static boolean check(int[][] a, String[] b, int x, int y) {
+        int n = a.length;
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b[0].length(); j++) {
+                int nx = x + i;
+                int ny = y + j;
+                if (0 <= nx && nx < n && 0 <= ny && ny < n) {
+                    if (b[i].charAt(j) == '0') {
+                        if (a[nx][ny] == 1)
+                            return false;
+                    } else if (b[i].charAt(j) == '1') {
+                        if (a[nx][ny] == 0)
+                            return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
-        char[][] a = new char[n][8];
-        for (int i = 0; i < n; i++) {
-            a[i] = sc.next().toCharArray();
-        }
-        int k = sc.nextInt();
-        while (k-- > 0) {
-            int no = sc.nextInt() - 1;
-            int dir = sc.nextInt();
-
-            int[] d = new int[n];
-            d[no] = dir;
-            for (int i = no - 1; i >= 0; i--) {
-                if (a[i][2] != a[i + 1][6]) {
-                    d[i] = -d[i + 1];
-                } else {
-                    break;
-                }
-            }
-            for (int i = no + 1; i < n; i++) {
-                if (a[i - 1][2] != a[i][6]) {
-                    d[i] = -d[i - 1];
-                } else {
-                    break;
-                }
-            }
+        int t = 3;
+        while (t-- > 0) {
+            int n = 6;
+            int[][] a = new int[n][n];
             for (int i = 0; i < n; i++) {
-                if (d[i] == 0)
-                    continue;
-                if (d[i] == 1) {
-                    char temp = a[i][7];
-                    for (int j = 7; j >= 1; j--) {
-                        a[i][j] = a[i][j - 1];
-                    }
-                    a[i][0] = temp;
-                } else if (d[i] == -1) {
-                    char temp = a[i][0];
-                    for (int j = 0; j < 7; j++) {
-                        a[i][j] = a[i][j + 1];
-                    }
-                    a[i][7] = temp;
+                for (int j = 0; j < n; j++) {
+                    a[i][j] = sc.nextInt();
                 }
             }
-        }
-        int ans = 0;
-        for (int i = 0; i < n; i++) {
-            if (a[i][0] == '1') {
-                ans += 1;
+
+            boolean ans = false;
+            for (String[] c : cubes) {
+                String[] cube = new String[c.length];
+                System.arraycopy(c, 0, cube, 0, c.length);
+                for (int mir = 0; mir < 2; mir++) {
+                    for (int rot = 0; rot < 4; rot++) {
+                        for (int i = 0; i < n; i++) {
+                            for (int j = 0; j < n; j++) {
+                                ans |= check(a, cube, i, j);
+                            }
+                        }
+                        cube = rotate(cube);
+                    }
+                    cube = mirror(cube);
+                }
             }
+            System.out.println(ans ? "yes" : "no");
         }
-        System.out.println(ans);
     }
 }
