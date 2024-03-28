@@ -1,91 +1,78 @@
 package org.example;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
-
 public class Main {
 
-    private static class State {
+    private static class Coord {
         public final int x;
         public final int y;
-        public final int canJump;
-        public final int step;
 
-        public State(int x, int y, int canJump, int step) {
+        private Coord(int x, int y) {
             this.x = x;
             this.y = y;
-            this.canJump = canJump;
-            this.step = step;
+        }
+    }
+
+    private static class Result {
+        public final boolean win;
+        public final int turns;
+
+        private Result(boolean win, int turns) {
+            this.win = win;
+            this.turns = turns;
         }
     }
 
     private static final int[] dx = {0, 0, -1, 1};
     private static final int[] dy = {-1, 1, 0, 0};
 
-    public int solution(int n, int m, int[][] hole) {
-        boolean[][] map = new boolean[m][n];
-        for (boolean[] row : map) {
-            Arrays.fill(row, true);
-        }
-        for (int[] h : hole) {
-            int x = h[0] - 1;
-            int y = h[1] - 1;
-            map[y][x] = false;
+    private Result game(Coord player, Coord opponent,
+            int[][] board) {
+        if (board[player.y][player.x] == 0) {
+            return new Result(false, 0);
         }
 
-        boolean[][][] isVisited = new boolean[m][n][2];
+        boolean win = false;
+        int winTurns = Integer.MAX_VALUE;
+        int loseTurns = Integer.MIN_VALUE;
 
-        Queue<State> q = new LinkedList<>();
-        q.add(new State(0, 0, 1, 0));
-        isVisited[0][0][1] = true;
+        board[player.y][player.x] = 0;
+        for (int d = 0; d < 4; d++) {
+            int nx = player.x + dx[d];
+            int ny = player.y + dy[d];
 
-        while (!q.isEmpty()) {
-            State s = q.poll();
-
-            if (s.x == n - 1 && s.y == m - 1) {
-                return s.step;
+            if (ny < 0 || ny >= board.length ||
+                    nx < 0 || nx >= board[ny].length) {
+                continue;
             }
-
-            for (int d = 0; d < 4; d++) {
-                int nx = s.x + dx[d];
-                int ny = s.y + dy[d];
-
-                if (ny < 0 || ny >= m || nx < 0 || nx >= n) {
-                    continue;
-                }
-                if (map[ny][nx]) {
-                    if (isVisited[ny][nx][s.canJump]) {
-                        continue;
-                    }
-                    isVisited[ny][nx][s.canJump] = true;
-                    q.add(new State(nx, ny, s.canJump, s.step + 1));
-                }
-
-                if (s.canJump != 1) {
-                    continue;
-                }
-
-                int nnx = nx + dx[d];
-                int nny = ny + dy[d];
-
-                if (nny < 0 || nny >= m || nnx < 0 || nnx >= n) {
-                    continue;
-                }
-                if (!map[nny][nnx]) {
-                    continue;
-                }
-                if (isVisited[nny][nnx][0]) {
-                    continue;
-                }
-                isVisited[ny][nx][0] = true;
-                q.add(new State(nnx, nny, 0, s.step + 1));
+            if (board[ny][nx] == 0) {
+                continue;
+            }
+            Result result = game(opponent, new Coord(nx, ny), board);
+            if (!result.win) {
+                win = true;
+                winTurns = Math.min(winTurns, result.turns);
+            } else if (!win) {
+                loseTurns = Math.max(loseTurns, result.turns);
             }
         }
+        board[player.y][player.x] = 1;
 
-        return -1;
+        if (win) {
+            return new Result(true, winTurns + 1);
+        }
+
+        if (loseTurns == Integer.MIN_VALUE) {
+            return new Result(false, 0);
+        }
+
+        return new Result(false, loseTurns + 1);
     }
-    
+
+    public int solution(int[][] board, int[] aloc, int[] bloc) {
+        return game(new Coord(aloc[1], aloc[0]),
+                new Coord(bloc[1], bloc[0]), board).turns;
+    }
+
     public static void main(String[] args) {
 
     }
