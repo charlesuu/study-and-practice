@@ -1,76 +1,100 @@
 package org.example;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Main {
 
-    private static class Coord {
-        public final int x;
-        public final int y;
+    private static class Fee {
+        private final int baseTime;
+        private final int baseFee;
+        private final int unitTime;
+        private final int unitFee;
 
-        private Coord(int x, int y) {
-            this.x = x;
-            this.y = y;
+        public Fee(int baseTime, int baseFee, int unitTime,
+                int unitFee) {
+            this.baseTime = baseTime;
+            this.baseFee = baseFee;
+            this.unitTime = unitTime;
+            this.unitFee = unitFee;
+        }
+
+        public int cost(int time) {
+            int fee = baseFee;
+            time -= baseTime;
+
+            while (time > 0) {
+                fee += unitFee;
+                time -= unitTime;
+            }
+
+            return fee;
         }
     }
 
-    private static class Result {
-        public final boolean win;
-        public final int turns;
+    private static class Car {
+        public final String number;
+        private final Fee fee;
+        private int inTime = -1;
+        private int totalTime = 0;
 
-        private Result(boolean win, int turns) {
-            this.win = win;
-            this.turns = turns;
+        public Car(String number, Fee fee) {
+            this.number = number;
+            this.fee = fee;
+        }
+
+        public void in(int time) {
+            this.inTime = time;
+        }
+
+        public void out(int time) {
+            if (this.inTime == -1) return;
+            totalTime += time - this.inTime;
+            this.inTime = -1;
+        }
+
+        public int cost() {
+            return fee.cost(totalTime);
         }
     }
 
-    private static final int[] dx = {0, 0, -1, 1};
-    private static final int[] dy = {-1, 1, 0, 0};
-
-    private Result game(Coord player, Coord opponent,
-            int[][] board) {
-        if (board[player.y][player.x] == 0) {
-            return new Result(false, 0);
-        }
-
-        boolean win = false;
-        int winTurns = Integer.MAX_VALUE;
-        int loseTurns = Integer.MIN_VALUE;
-
-        board[player.y][player.x] = 0;
-        for (int d = 0; d < 4; d++) {
-            int nx = player.x + dx[d];
-            int ny = player.y + dy[d];
-
-            if (ny < 0 || ny >= board.length ||
-                    nx < 0 || nx >= board[ny].length) {
-                continue;
-            }
-            if (board[ny][nx] == 0) {
-                continue;
-            }
-            Result result = game(opponent, new Coord(nx, ny), board);
-            if (!result.win) {
-                win = true;
-                winTurns = Math.min(winTurns, result.turns);
-            } else if (!win) {
-                loseTurns = Math.max(loseTurns, result.turns);
-            }
-        }
-        board[player.y][player.x] = 1;
-
-        if (win) {
-            return new Result(true, winTurns + 1);
-        }
-
-        if (loseTurns == Integer.MIN_VALUE) {
-            return new Result(false, 0);
-        }
-
-        return new Result(false, loseTurns + 1);
+    private int parseTime(String time) {
+        int hour = Integer.parseInt(time.substring(0, 2));
+        int minute = Integer.parseInt(time.substring(3));
+        return hour * 60 + minute;
     }
 
-    public int solution(int[][] board, int[] aloc, int[] bloc) {
-        return game(new Coord(aloc[1], aloc[0]),
-                new Coord(bloc[1], bloc[0]), board).turns;
+    public int[] solution(int[] fees, String[] records) {
+        Fee fee = new Fee(fees[0], fees[1], fees[2], fees[3]);
+
+        Map<String, Car> cars = new HashMap<>();
+        for (String record : records) {
+            String[] tokens = record.split(" ");
+            int time = parseTime(tokens[0]);
+            String number = tokens[1];
+            boolean isIn = tokens[2].equals("IN");
+
+            if (!cars.containsKey(number)) {
+                cars.put(number, new Car(number, fee));
+            }
+            Car car = cars.get(number);
+            if (isIn) {
+                car.in(time);
+            } else {
+                car.out(time);
+            }
+        }
+
+        int endTime = parseTime("23:59");
+        for (Car car : cars.values()) {
+            car.out(endTime);
+        }
+
+        return cars.values().stream()
+                .sorted(Comparator.comparing(car -> car.number))
+                .mapToInt(Car::cost)
+                .toArray();
     }
 
     public static void main(String[] args) {
